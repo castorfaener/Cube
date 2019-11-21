@@ -385,7 +385,7 @@ void Show_config(void)                             //Funcion para mostrar la con
 
 void Moving_psw(void)
 {
-
+  Serial1.println("Moving_psw");
 }
 
 
@@ -465,7 +465,7 @@ void Light_test(void)
 
 void RFID_test(void)                          //NO FUNCIONA
 {
-  
+  Serial1.println("RFID_test");
 }
 
 void Key_test(void)
