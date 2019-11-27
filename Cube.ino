@@ -6,6 +6,13 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+const byte Off = 0;                   //Definimos colores del led RGB
+const byte Red = 1;
+const byte Green = 2;
+const byte Blue = 3;
+const byte White = 4;
+const byte Yellow = 5;
+const byte Purple = 6;
 
 
 const int Eeprom_Address = 0x50;
@@ -437,17 +444,17 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
         if(X_accel >= 1.5)
         {
           X_count++;
-          beep(1);
+          beep(50,1);
         }
         if(Y_accel >= 1.5)
         {
           Y_count++;
-          beep(1);
+          beep(50,1);
         }
         if(Z_accel <= -1.5)
         {
           Z_count++;
-          beep(1);
+          beep(50,1);
         } 
 
         if(X_count >= 10)
@@ -474,15 +481,15 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
           Serial1.println(Z_count);
           if(X_count == X_pass && Y_count == Y_pass && Z_count == Z_pass)
           {
-            win = 1;
+            led(Green);
             Serial1.println("Has acertado");
-            beep(3);
+            beep(50, 5);
           }
           else
           {
-            win = 0;
+            led(Red);
             Serial1.println("Has fallado. Intentalo de nuevo");
-            beep(4);
+            beep(200, 1);
           }
         }
       }
@@ -591,24 +598,15 @@ void Key_test(void)
 //Funcion para probar el led RGB
 void RGB_test(void)                             
 {
-  digitalWrite(RLed_Pin, 255);                  //Encendemos el color Rojo
-  digitalWrite(GLed_Pin, 0);
-  digitalWrite(BLed_Pin, 0);
+  led(Red);
   delay(500);
-  digitalWrite(RLed_Pin, 0);                     //Encendemos el color Verde
-  digitalWrite(GLed_Pin, 255);
-  digitalWrite(BLed_Pin, 0);
+  led(Green);
   delay(500);
-  digitalWrite(RLed_Pin, 0);                    //Encendemos el color Azul
-  digitalWrite(GLed_Pin, 0);
-  digitalWrite(BLed_Pin, 255);
+  led(Blue);
   delay(500);
-  digitalWrite(RLed_Pin, 0);                    //Apagamos el led
-  digitalWrite(GLed_Pin, 0);
-  digitalWrite(BLed_Pin, 0);
-  
-  beep(2);
-  beep(4);
+  led(Off);
+  beep(50, 2);
+  beep(200, 1);
 
 }
 
@@ -683,58 +681,57 @@ void i2c_eeprom_write_byte(int deviceaddress, unsigned int eeaddress, byte data)
 
 
 
-void beep(int mode)
+void beep(int time, int repeat)                               //Control de pitido
 {
-    
-
-  switch(mode){
-    case 1:                                     //mode = 1: 1 pitido corto
-    for(int i = 0; i < 1; i++)  
-    {
-      digitalWrite(Buzz_Pin, HIGH);
-      delay(50);
-      digitalWrite(Buzz_Pin, LOW);
-      delay(50);
-    }                                 
-    break;
-    
-    case 2:                                     //mode = 2: 2 pitidos cortos
-    for(int i = 0; i < 2; i++)  
-    {
-      digitalWrite(Buzz_Pin, HIGH);
-      delay(50);
-      digitalWrite(Buzz_Pin, LOW);
-      delay(50);
-    }
-    break;
-    case 3:                                     //mode = 3: 3 pitidos cortos
-    for(int i = 0; i < 3; i++)  
-    {
-      digitalWrite(Buzz_Pin, HIGH);
-      delay(50);
-      digitalWrite(Buzz_Pin, LOW);
-      delay(50);
-    }
-    break;
-
-    case 4:                                     //mode = 4: 1 pitido largo
+                                    
+  for(int i = 0; i < repeat; i++)  
+  {
     digitalWrite(Buzz_Pin, HIGH);
-    delay(500);
+    delay(time);
     digitalWrite(Buzz_Pin, LOW);
-    delay(200);
-    break;
+    delay(time);
+  }                                 
 
-    case 5:                                     //mode = 5: 2 pitidos largos
-    digitalWrite(Buzz_Pin, HIGH);
-    delay(500);
-    digitalWrite(Buzz_Pin, LOW);
-    delay(200);
-    digitalWrite(Buzz_Pin, HIGH);
-    delay(1000);
-    digitalWrite(Buzz_Pin, LOW);
-    delay(200);
-    break;
+}
 
-    
+void led(byte color)
+{
+  switch(color)
+  {
+    case 0:
+      digitalWrite(RLed_Pin, 0);                    //Apagamos el led
+      digitalWrite(GLed_Pin, 0);
+      digitalWrite(BLed_Pin, 0);
+      break;
+    case 1:  
+      digitalWrite(RLed_Pin, 255);                    //Rojo
+      digitalWrite(GLed_Pin, 0);
+      digitalWrite(BLed_Pin, 0);
+      break;
+    case 2:  
+      digitalWrite(RLed_Pin, 0);                    //Verde
+      digitalWrite(GLed_Pin, 255);
+      digitalWrite(BLed_Pin, 0);
+      break;
+    case 3:  
+      digitalWrite(RLed_Pin, 0);                    //Azul
+      digitalWrite(GLed_Pin, 0);
+      digitalWrite(BLed_Pin, 255);
+      break;  
+    case 4:  
+      digitalWrite(RLed_Pin, 255);                    //Blanco
+      digitalWrite(GLed_Pin, 255);
+      digitalWrite(BLed_Pin, 255);
+      break; 
+    case 5:  
+      digitalWrite(RLed_Pin, 255);                    //Amarillo
+      digitalWrite(GLed_Pin, 255);
+      digitalWrite(BLed_Pin, 0);
+      break;   
+    case 6:  
+      digitalWrite(RLed_Pin, 255);                    //Rosa
+      digitalWrite(GLed_Pin, 0);
+      digitalWrite(BLed_Pin, 255);
+      break;        
   }
 }
