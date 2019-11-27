@@ -1,8 +1,10 @@
 #include <Wire.h>
 #include <SPI.h>
+#include <Arduino_LSM6DS3.h>
 #include <MFRC522.h>
 #include "MAX1704X.h"
-
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 
 
@@ -25,9 +27,14 @@ byte EN_RGB;
 byte EN_Display;
 byte EN_Buzz;
 
+int win = 0;
+
 int readCard[4];                  //Identificador de la tarjeta RFID
 
 int cm;                           //distancia del sensor de US
+
+bool button1_state;                   //Control del estado de los botones
+bool button2_state; 
 
 const int RLed_Pin = 5;               //Definimos los pines del Led RGB
 const int GLed_Pin = 3;
@@ -44,7 +51,7 @@ const int Light_Pin = A2;             //Definimos el pin del sensor de luz
 
 const int Key_Pin = 8;               //Definimos el pin del interruptor de llave
 
-const int Button1_Pin = 3;            //Definimos los pines de los tres pulsadores
+const int Button1_Pin = 4;            //Definimos los pines de los tres pulsadores
 const int Button2_Pin = 7;
 
 
@@ -62,6 +69,12 @@ void setup()
   SPI.begin();                        //Inicializamos SPI   
   mfrc522.PCD_Init();                 //Inicializamos el lector RFID
   Wire.begin();                       //Inicializamos puerto I2C
+
+  if (!IMU.begin()) 
+  {
+    Serial1.println("Failed to initialize IMU!");
+    while (1);
+  }
   
   pinMode(RLed_Pin, OUTPUT);            //Configuramos los pines de E/S
   pinMode(GLed_Pin, OUTPUT);
@@ -79,9 +92,11 @@ void setup()
   //Recuperamos la configuracion guardada de la Eeprom
 
   Mode = i2c_eeprom_read_byte(Eeprom_Address,0x08);    //Leemos el modo de funcionamiento guardado en la EEPROM
-  X_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA0);
+  X_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA0);   //Contraseña x y z
   Y_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA1);
   Z_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA2);
+
+
 
 }
 
@@ -264,8 +279,8 @@ void Serial_menu(void)
       delay(10);
 
    }
+   }
    
-}
 
 void Moving_psw_setup(void)                     //Funcion de configuracion del modo 1   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 {
@@ -318,12 +333,20 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
       
       
       Serial1.println("Contraseña guardada");
+      Menu = 0;
+
+      return;
       break;
 
       default:
       return;
     }
   } 
+  Mode = 1;
+  Serial1.println("Ya puedes empezar");
+  i2c_eeprom_write_byte(Eeprom_Address, 0x08, Mode);
+  
+  return;
 }
 
 
@@ -383,9 +406,91 @@ void Show_config(void)                             //Funcion para mostrar la con
       Serial1.println(Z_pass);
    }
 
-void Moving_psw(void)
+void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 {
-  Serial1.println("Moving_psw");
+  float X_accel;                      //Variables para la lectura del acelerometro
+  float Y_accel;
+  float Z_accel;
+
+  int start = 0;
+  
+
+  int X_count = 0;                        //Variables para contar los movimientos de los ejes
+  int Y_count = 0;
+  int Z_count = 0;
+
+  
+  button1_state = digitalRead(Button1_Pin);
+  delay(100);
+  
+  
+  if(button1_state == HIGH)
+  {
+    Serial1.println("empezamos");
+    start = 1;
+    do
+    {
+      
+      if (IMU.accelerationAvailable()) 
+      {
+        IMU.readAcceleration(X_accel, Y_accel, Z_accel);
+        if(X_accel >= 1.5)
+        {
+          X_count++;
+          beep(1);
+        }
+        if(Y_accel >= 1.5)
+        {
+          Y_count++;
+          beep(1);
+        }
+        if(Z_accel <= -1.5)
+        {
+          Z_count++;
+          beep(1);
+        } 
+
+        if(X_count >= 10)
+        {
+         X_count = 0;
+        }
+        if(Y_count >= 10)
+        {
+          Y_count = 0;
+        }
+        if(Z_count >= 10)
+        {
+          Z_count = 0;
+        }
+        
+          
+        button2_state = digitalRead(Button2_Pin);
+        delay(100);
+        if(button2_state == HIGH)
+        {
+          start = 0;
+          Serial1.println(X_count);
+          Serial1.println(Y_count);
+          Serial1.println(Z_count);
+          if(X_count == X_pass && Y_count == Y_pass && Z_count == Z_pass)
+          {
+            win = 1;
+            Serial1.println("Has acertado");
+            beep(3);
+          }
+          else
+          {
+            win = 0;
+            Serial1.println("Has fallado. Intentalo de nuevo");
+            beep(4);
+          }
+        }
+      }
+      
+    }while(start == 1);
+  }
+
+   
 }
 
 
@@ -509,7 +614,24 @@ void RGB_test(void)
 
 void Display_test(void)
 {
-  Serial1.println("Display_test");
+  bool button1_state;
+  bool button2_state;
+
+  button1_state = digitalRead(Button1_Pin);
+  delay(2);
+  button2_state = digitalRead(Button2_Pin);
+  delay(2);
+  if(button1_state == HIGH) 
+  {
+    Serial1.println("El pulsador 1 está pulsado");
+  }
+  if(button2_state == HIGH) 
+  {
+    Serial1.println("El pulsador 2 está pulsado");
+  }
+  
+  
+
 }
 
 
@@ -529,7 +651,11 @@ int US(int Trigger, int Echo)
   distanceCm = duration * 10 / 292/ 2;   //convertimos a distancia, en cm
   return distanceCm;
 }
+    
+  
+  
 
+  
 //Funcion para la lectura de un byte de la memoria EEPROM externa
 byte i2c_eeprom_read_byte(int deviceaddress, unsigned int eeaddress) 
 {
@@ -552,6 +678,7 @@ void i2c_eeprom_write_byte(int deviceaddress, unsigned int eeaddress, byte data)
    Wire.write((int)(eeaddress & 0xFF)); // LSB
    Wire.write(rdata);
    Wire.endTransmission();
+   delay(10);
 }
 
 
@@ -608,6 +735,6 @@ void beep(int mode)
     delay(200);
     break;
 
-    }
-  
+    
+  }
 }

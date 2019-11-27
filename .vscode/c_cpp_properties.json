@@ -3,8 +3,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/pakels/.arduino15/packages/arduino/tools/**",
                 "/home/pakels/.arduino15/packages/arduino/hardware/samd/1.8.4/**",
+                "/home/pakels/.arduino15/packages/arduino/tools/**",
+                "/home/pakels/Descargas/arduino-1.8.10/libraries/**",
                 "${workspaceFolder}/**"
             ],
             "defines": [],
