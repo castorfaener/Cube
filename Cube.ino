@@ -77,6 +77,10 @@ void setup()
   mfrc522.PCD_Init();                 //Inicializamos el lector RFID
   Wire.begin();                       //Inicializamos puerto I2C
 
+   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Inicializamos el display I2C 128x32
+   display.clearDisplay();
+   
+
   if (!IMU.begin()) 
   {
     Serial1.println("Failed to initialize IMU!");
@@ -434,6 +438,13 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
   if(button1_state == HIGH)
   {
     Serial1.println("empezamos");
+    display.setTextColor(WHITE); 
+    display.setTextSize(2);
+    display.setCursor(40,8);
+    display.print("START");
+    display.display();
+    delay(2000);
+    display.clearDisplay();
     start = 1;
     do
     {
@@ -470,6 +481,15 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
           Z_count = 0;
         }
         
+        display.setCursor(20,8);
+        display.print(x);
+        display.setCursor(60,8);
+        display.print(y);
+        display.setCursor(100,8);
+        display.print(z);
+        display.display();
+        delay(2000);
+        display.clearDisplay();
           
         button2_state = digitalRead(Button2_Pin);
         delay(100);
@@ -483,12 +503,22 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
           {
             led(Green);
             Serial1.println("Has acertado");
+            display.setCursor(15,8);
+            display.print("CORRECTO");
+            display.display();
+            delay(2000);
+            display.clearDisplay();
             beep(50, 5);
           }
           else
           {
             led(Red);
             Serial1.println("Has fallado. Intentalo de nuevo");
+            display.setCursor(40,8);
+            display.print("ERROR");
+            display.display();
+            delay(2000);
+            display.clearDisplay();
             beep(200, 1);
           }
         }
