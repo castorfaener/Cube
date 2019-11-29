@@ -443,7 +443,6 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
     display.setCursor(40,8);
     display.print("START");
     display.display();
-    delay(2000);
     display.clearDisplay();
     start = 1;
     do
@@ -488,7 +487,6 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
         display.setCursor(100,8);
         display.print(z);
         display.display();
-        delay(2000);
         display.clearDisplay();
           
         button2_state = digitalRead(Button2_Pin);
@@ -506,7 +504,6 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
             display.setCursor(15,8);
             display.print("CORRECTO");
             display.display();
-            delay(2000);
             display.clearDisplay();
             beep(50, 5);
           }
@@ -517,7 +514,6 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
             display.setCursor(40,8);
             display.print("ERROR");
             display.display();
-            delay(2000);
             display.clearDisplay();
             beep(200, 1);
           }
