@@ -25,6 +25,12 @@ byte X_pass;                       //Contraseña del modo XYZ
 byte Y_pass;
 byte Z_pass;
 
+byte X_sense;
+byte Y_sense;
+byte Z_sense;
+
+byte treas[16];
+
 byte EN_PIR;                      //Control de sensores habilitados
 byte EN_US;
 byte EN_Light;
@@ -36,7 +42,7 @@ byte EN_Buzz;
 
 int win = 0;
 
-int readCard[4];                  //Identificador de la tarjeta RFID
+byte readCard[4];                  //Identificador de la tarjeta RFID
 
 int cm;                           //distancia del sensor de US
 
@@ -66,6 +72,19 @@ const int RST_PIN = 9;              // Pin 9 para el reset del RC522
 const int SS_PIN = 10;              // Pin 10 para el SS (SDA) del RC522
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Crear instancia del MFRC522
 
+Adafruit_SSD1306 display(128, 32, &Wire, -1);
+
+const unsigned char logo_cube [] = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x80, 0xC0, 0x40, 0x60, 0x20,
+0x20, 0x60, 0x40, 0xC0, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0xFC, 0xFC, 0x0E, 0x1A, 0x1B, 0x31, 0x31, 0x60, 0x60, 0xC0, 0xC0, 0x80,
+0x80, 0xC0, 0xC0, 0xE0, 0xE0, 0xF1, 0xF1, 0xFB, 0xFA, 0xFE, 0xFC, 0xFC, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x03, 0x02, 0x06, 0x04, 0x0C, 0x08, 0x18, 0x1F,
+0x1F, 0x1F, 0x0F, 0x0F, 0x07, 0x07, 0x03, 0x03, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
 
 void setup() 
 {
@@ -79,7 +98,14 @@ void setup()
 
    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Inicializamos el display I2C 128x32
    display.clearDisplay();
-   
+
+  /* 
+   display.drawBitmap(96,0,logo_cube,32,32,WHITE);
+   display.display();
+   delay(1000);
+   display.clearDisplay();
+   display.display();
+  */
 
   if (!IMU.begin()) 
   {
@@ -106,7 +132,9 @@ void setup()
   X_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA0);   //Contraseña x y z
   Y_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA1);
   Z_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA2);
-
+  X_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA4);
+  Y_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA5);
+  Z_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA6);
 
 
 }
@@ -444,6 +472,7 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
     display.print("START");
     display.display();
     display.clearDisplay();
+    delay(2000);
     start = 1;
     do
     {
@@ -481,11 +510,11 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
         }
         
         display.setCursor(20,8);
-        display.print(x);
+        display.print(X_count);
         display.setCursor(60,8);
-        display.print(y);
+        display.print(Y_count);
         display.setCursor(100,8);
-        display.print(z);
+        display.print(Z_count);
         display.display();
         display.clearDisplay();
           
