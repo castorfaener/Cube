@@ -29,7 +29,7 @@ byte X_sense;
 byte Y_sense;
 byte Z_sense;
 
-byte treas[16];
+byte treas[20];
 
 byte EN_PIR;                      //Control de sensores habilitados
 byte EN_US;
@@ -313,9 +313,9 @@ void Serial_menu(void)
         Menu = 0;
         return;
 
-     default:
-      Serial1.println("Error en la seleccion. Intentalo de nuevo");
-      delay(10);
+      default:
+        Serial1.println("Error en la seleccion. Intentalo de nuevo");
+        delay(10);
 
    }
    }
