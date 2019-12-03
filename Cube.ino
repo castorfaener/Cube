@@ -132,7 +132,7 @@ void setup()
   X_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA0);   //Contraseña x y z
   Y_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA1);
   Z_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA2);
-  X_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA4);
+  X_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA4);	//Sensibilidad de movimientos
   Y_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA5);
   Z_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA6);
 
@@ -312,69 +312,115 @@ void Serial_menu(void)
 
 void Moving_psw_setup(void)                     //Funcion de configuracion del modo 1   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 {
-  Serial1.println("----------------------------------------------------");
-  Serial1.println("-- Configuracion de la contraseña de movimientos  --");
-  Serial1.println("----------------------------------------------------");
-  Serial1.println("La contraseña almacenada es:");
-  Serial1.print("X: ");
-  Serial1.println(X_pass);
-  Serial1.print("Y: ");
-  Serial1.println(Y_pass);
-  Serial1.print("Z: ");
-  Serial1.println(Z_pass);
-  Serial1.println("¿Quieres modificar la contraseña (s/n)?");
-  while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
-while(Serial1.available())
-{
-    char SerialIn = Serial1.read();
-    switch(SerialIn)
-{
-  case 'n':
-  break;
-
-  case 's':
-  Serial1.println("Introduce un valor para X");
-	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+  	Serial1.println("----------------------------------------------------");
+ 	Serial1.println("-- Configuracion de la contraseña de movimientos  --");
+  	Serial1.println("----------------------------------------------------");
+  	Serial1.println("La contraseña almacenada es:");
+  	Serial1.print("X: ");
+  	Serial1.println(X_pass);
+  	Serial1.print("Y: ");
+  	Serial1.println(Y_pass);
+  	Serial1.print("Z: ");
+  	Serial1.println(Z_pass);
+  	Serial1.println("¿Quieres modificar la contraseña (s/n)?");
+  	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
 	while(Serial1.available())
 	{
-	  X_pass = Serial1.parseInt();
-	  i2c_eeprom_write_byte(Eeprom_Address,0xA0, X_pass);
-	  delay(10);
-    }
-    Serial1.println("Introduce un valor para Y");
-	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+    	char SerialIn = Serial1.read();
+    	switch(SerialIn)
+		{
+  			case 'n':
+  			break;
+
+  			case 's':
+  			Serial1.println("Introduce un valor para X");
+			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+			while(Serial1.available())
+			{
+	  			X_pass = Serial1.parseInt();
+	  			i2c_eeprom_write_byte(Eeprom_Address,0xA0, X_pass);
+	  			delay(10);
+    		}
+    		Serial1.println("Introduce un valor para Y");
+			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+			while(Serial1.available())
+			{
+	  			Y_pass = Serial1.parseInt();
+	  			i2c_eeprom_write_byte(Eeprom_Address,0xA1, Y_pass);
+	  			delay(10);
+    		}
+    		Serial1.println("Introduce un valor para Z");
+			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+			while(Serial1.available())
+			{
+	  			Z_pass = Serial1.parseInt();
+	  			i2c_eeprom_write_byte(Eeprom_Address,0xA2, Z_pass);
+	  			delay(10);
+    		}
+    		Serial1.println("Contraseña guardada");
+    		Menu = 0;
+			break;
+
+    		default:
+    		break;
+		}
+	} 
+	Serial1.println("La sensibilidad en g's es:");
+  	Serial1.print("X: ");
+  	Serial1.println(X_sense);
+  	Serial1.print("Y: ");
+  	Serial1.println(Y_sense);
+  	Serial1.print("Z: ");
+  	Serial1.println(Z_sense);
+  	Serial1.println("¿Quieres modificar la sensibilidad (s/n)?");
+  	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
 	while(Serial1.available())
 	{
-	  Y_pass = Serial1.parseInt();
-	  i2c_eeprom_write_byte(Eeprom_Address,0xA1, Y_pass);
-	  delay(10);
-    }
-    Serial1.println("Introduce un valor para Z");
-	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
-	while(Serial1.available())
-	{
-	  Z_pass = Serial1.parseInt();
-	  i2c_eeprom_write_byte(Eeprom_Address,0xA2, Z_pass);
-	  delay(10);
-    }
-    
-    
-    
-    Serial1.println("Contraseña guardada");
-    Menu = 0;
+    	char SerialIn = Serial1.read();
+    	switch(SerialIn)
+		{
+  			case 'n':
+  			break;
 
-    return;
-    break;
+  			case 's':
+  			Serial1.println("Introduce un valor para X");
+			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+			while(Serial1.available())
+			{
+	  			X_sense = Serial1.parseInt();
+	  			i2c_eeprom_write_byte(Eeprom_Address,0xA4, X_sense);
+	  			delay(10);
+    		}
+    		Serial1.println("Introduce un valor para Y");
+			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+			while(Serial1.available())
+			{
+	  			Y_sense = Serial1.parseInt();
+	  			i2c_eeprom_write_byte(Eeprom_Address,0xA5, Y_sense);
+	  			delay(10);
+    		}
+    		Serial1.println("Introduce un valor para Z");
+			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+			while(Serial1.available())
+			{
+	  			Z_sense = Serial1.parseInt();
+	  			i2c_eeprom_write_byte(Eeprom_Address,0xA2, Z_sense);
+	  			delay(10);
+    		}
+    		Serial1.println("Sensibilidad configurada");
+    		Menu = 0;
+			break;
 
-    default:
-    return;
-}
-} 
-Mode = 1;
-Serial1.println("Ya puedes empezar");
-i2c_eeprom_write_byte(Eeprom_Address, 0x08, Mode);
+    		default:
+    		break;
+		}
+	} 
 
-return;
+	Mode = 1;
+	Serial1.println("Ya puedes empezar");
+	i2c_eeprom_write_byte(Eeprom_Address, 0x08, Mode);
+
+	return;
 }
 
 
@@ -469,17 +515,17 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
 			if (IMU.accelerationAvailable()) 
 			{
 	  			IMU.readAcceleration(X_accel, Y_accel, Z_accel);
-	  			if(X_accel >= 1.5)
+	  			if(X_accel >= X_sense)
 	  			{
 	    			X_count++;
 	    			beep(50,1);
 				}
-				if(Y_accel >= 1.5)
+				if(Y_accel >= Y_sense)
 				{
 	    			Y_count++;
 	    			beep(50,1);
 				}
-				if(Z_accel <= -1.5)
+				if(Z_accel <= Z_sense)
 				{
 	    			Z_count++;
 	    			beep(50,1);
