@@ -29,7 +29,7 @@ byte X_sense;
 byte Y_sense;
 byte Z_sense;
 
-byte treas[20];
+char treas[20];
 
 byte EN_PIR;                      //Control de sensores habilitados
 byte EN_US;
@@ -312,6 +312,7 @@ void Serial_menu(void)
 
 void Moving_psw_setup(void)                     //Funcion de configuracion del modo 1   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 {
+	char SerialIn;
   	Serial1.println("----------------------------------------------------");
  	Serial1.println("-- Configuracion de la contraseña de movimientos  --");
   	Serial1.println("----------------------------------------------------");
@@ -322,11 +323,12 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
   	Serial1.println(Y_pass);
   	Serial1.print("Z: ");
   	Serial1.println(Z_pass);
+  	Serial1.println(""); 
   	Serial1.println("¿Quieres modificar la contraseña (s/n)?");
   	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
 	while(Serial1.available())
 	{
-    	char SerialIn = Serial1.read();
+    	SerialIn = Serial1.read();
     	switch(SerialIn)
 		{
   			case 'n':
@@ -364,7 +366,8 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
     		default:
     		break;
 		}
-	} 
+	}
+	Serial1.println(""); 
 	Serial1.println("La sensibilidad en g's es:");
   	Serial1.print("X: ");
   	Serial1.println(X_sense);
@@ -376,7 +379,7 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
   	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
 	while(Serial1.available())
 	{
-    	char SerialIn = Serial1.read();
+    	SerialIn = Serial1.read();
     	switch(SerialIn)
 		{
   			case 'n':
@@ -415,6 +418,47 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
     		break;
 		}
 	} 
+	Serial1.println(""); 
+	Serial1.print("La palabra buscada es: ");
+	Serial1.println(treas);
+	Serial1.println("¿Quieres cambiarla? (s/n)");
+	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+	while(Serial1.available())
+	{
+		SerialIn = Serial1.read();
+		switch(SerialIn)
+		{
+			case 's':
+			{
+			SerialIn = 'p';	
+			int dir = 0xB0;	
+			int i = 0;											//Variable para el control de la direccion de memoria
+			while(Serial1.available()>=1)
+			{
+				SerialIn = Serial1.read();
+				if(SerialIn != '\n')
+				{
+					treas[i] = SerialIn;
+					i++;
+					i2c_eeprom_write_byte(Eeprom_Address,dir, treas[i]);
+				}
+				else
+				{
+					break;
+				}
+			}
+			Serial1.print("La nueva palabra es:");
+			Serial1.println(treas);
+			break;
+			}
+
+			case 'n':
+			break;
+		}
+	}
+
+	
+
 
 	Mode = 1;
 	Serial1.println("Ya puedes empezar");
