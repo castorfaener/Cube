@@ -20,7 +20,7 @@ byte Eeprom;
 
 int Menu = 0;                       //Control de nivel del menu
 int ID;                            //Identificador del cubo
-int Mode;                         //Modo de funcionamiento
+byte Mode;                         //Modo de funcionamiento
 byte X_pass;                       //Contraseña del modo XYZ
 byte Y_pass;
 byte Z_pass;
@@ -28,6 +28,8 @@ byte Z_pass;
 byte X_sense;
 byte Y_sense;
 byte Z_sense;
+
+byte TNT_sense;
 
 char treas[20];
 
@@ -74,17 +76,6 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Crear instancia del MFRC522
 
 Adafruit_SSD1306 display(128, 32, &Wire, -1);
 
-const unsigned char logo_cube [] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x80, 0xC0, 0x40, 0x60, 0x20,
-    0x20, 0x60, 0x40, 0xC0, 0x80, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0xFC, 0xFC, 0x0E, 0x1A, 0x1B, 0x31, 0x31, 0x60, 0x60, 0xC0, 0xC0, 0x80,
-    0x80, 0xC0, 0xC0, 0xE0, 0xE0, 0xF1, 0xF1, 0xFB, 0xFA, 0xFE, 0xFC, 0xFC, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x03, 0x02, 0x06, 0x04, 0x0C, 0x08, 0x18, 0x1F,
-    0x1F, 0x1F, 0x0F, 0x0F, 0x07, 0x07, 0x03, 0x03, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
 
 void setup() 
 {
@@ -99,19 +90,13 @@ void setup()
    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Inicializamos el display I2C 128x32
    display.clearDisplay();
 
-  /* 
-   display.drawBitmap(96,0,logo_cube,32,32,WHITE);
-   display.display();
-   delay(1000);
-   display.clearDisplay();
-   display.display();
-  */
+
 
    if (!IMU.begin()) 
-{
-    Serial1.println("Failed to initialize IMU!");
-    while (1);
-}
+	{
+    	Serial1.println("Failed to initialize IMU!");
+    	while (1);
+	}
 
   pinMode(RLed_Pin, OUTPUT);            //Configuramos los pines de E/S
   pinMode(GLed_Pin, OUTPUT);
@@ -135,6 +120,7 @@ void setup()
   X_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA4);	//Sensibilidad de movimientos
   Y_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA5);
   Z_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA6);
+  TNT_sense = i2c_eeprom_read_byte(Eeprom_Address,0xC0); //Sensibilidad del acelerometro en el modo TNT
 
 
 }
@@ -195,6 +181,10 @@ void Serial_menu(void)
     		Moving_psw_setup();
     		break;
 		}
+		else if(Menu==2)
+		{
+
+		}	
 		else if(Menu==8)
 		{
     		Accel_test();
@@ -204,7 +194,7 @@ void Serial_menu(void)
 		case '2':
 		if(Menu==1)
 		{
-	  		//TNT_setup();
+	  		TNT_setup();
     		break;
 		}
 		else if(Menu==8)
@@ -316,6 +306,7 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
   	Serial1.println("----------------------------------------------------");
  	Serial1.println("-- Configuracion de la contraseña de movimientos  --");
   	Serial1.println("----------------------------------------------------");
+  	Serial1.println(""); 
   	Serial1.println("La contraseña almacenada es:");
   	Serial1.print("X: ");
   	Serial1.println(X_pass);
@@ -407,17 +398,17 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
 			while(Serial1.available())
 			{
 	  			Z_sense = Serial1.parseInt();
-	  			i2c_eeprom_write_byte(Eeprom_Address,0xA2, Z_sense);
+	  			i2c_eeprom_write_byte(Eeprom_Address,0xA6, Z_sense);
 	  			delay(10);
     		}
     		Serial1.println("Sensibilidad configurada");
-    		Menu = 0;
 			break;
 
     		default:
     		break;
 		}
 	} 
+	/*			NO FUNCIONA
 	Serial1.println(""); 
 	Serial1.print("La palabra buscada es: ");
 	Serial1.println(treas);
@@ -430,21 +421,22 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
 		{
 			case 's':
 			{
-			SerialIn = 'p';	
-			int dir = 0xB0;	
-			int i = 0;											//Variable para el control de la direccion de memoria
-			while(Serial1.available()>=1)
+			
+			int dir = 0xB0;										//Variable para el control de la direccion de memoria
+			int i = 0;	
+			while(SerialIn!='\n')
 			{
-				SerialIn = Serial1.read();
-				if(SerialIn != '\n')
+
+				while(Serial1.available())
 				{
-					treas[i] = SerialIn;
-					i++;
-					i2c_eeprom_write_byte(Eeprom_Address,dir, treas[i]);
-				}
-				else
-				{
-					break;
+					SerialIn = Serial1.read();
+					if(SerialIn != '\n')
+					{
+						treas[i] = SerialIn;
+						i++;
+						i2c_eeprom_write_byte(Eeprom_Address,dir, treas[i]);
+						delay(20);
+					}
 				}
 			}
 			Serial1.print("La nueva palabra es:");
@@ -457,9 +449,9 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
 		}
 	}
 
-	
+	*/
 
-
+	Menu = 0;
 	Mode = 1;
 	Serial1.println("Ya puedes empezar");
 	i2c_eeprom_write_byte(Eeprom_Address, 0x08, Mode);
@@ -471,7 +463,70 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
 
 void TNT_setup(void)                            //Funcion de configuracion del modo 2
 {
+	char SerialIn;
+	float sense;
+	sense = TNT_sense / 100;
+  	Serial1.println("---------------------------------");
+ 	Serial1.println("-- Configuracion del modo TNT  --");
+  	Serial1.println("---------------------------------");
+  	Serial1.println(""); 
+  	Serial1.print("La sensibilidad del acelerometro para este modo es de: ");
+  	Serial1.print(sense);
+  	Serial1.println(" g's");
+  	Serial1.println("¿Quieres modificarla? (s/n)");
+  	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+	while(Serial1.available())
+	{
+    	SerialIn = Serial1.read();
+    	switch(SerialIn)
+		{
+  			case 'n':
+  			break;
 
+  			case 's':
+  			Serial1.println("Elige el nuevo valor:");
+  			Serial1.println("1. 0,05 g");
+  			Serial1.println("2. 0,10 g");
+  			Serial1.println("3. 0,25 g");
+  			Serial1.println("4. 0,50 g");
+			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+			while(Serial1.available())
+			{
+	  			SerialIn = Serial1.read();
+	  			switch(SerialIn)
+	  			{
+	  				case '1':
+	  				sense = 0.05;
+	  				break;
+
+	  				case '2':
+	  				sense = 0.10;
+	  				break;
+
+	  				case '3':
+	  				sense = 0.25;
+	  				break;
+
+	  				case '4':
+	  				sense = 0.50;
+	  				break;
+	  			}
+	  			TNT_sense = sense * 100;
+	  			i2c_eeprom_write_byte(Eeprom_Address,0xC0, TNT_sense);
+	  			delay(10);
+	  			Serial1.print("El nuevo valor es: ");
+	  			Serial1.print(sense);
+	  			Serial1.print(TNT_sense);
+	  			Serial1.println(" g");
+	  			Serial1.print(TNT_sense);
+	  			Menu = 0;
+	  			Mode = 2;
+	  			Serial1.println("Ya puedes empezar");
+				i2c_eeprom_write_byte(Eeprom_Address, 0x08, Mode);
+	  			return;
+    		}
+    	}	
+    }	
 }
 
 
