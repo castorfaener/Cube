@@ -29,7 +29,7 @@ byte X_sense;
 byte Y_sense;
 byte Z_sense;
 
-byte TNT_sense;
+byte TNT_sense[4];					//Sensibilidad del modo TNT
 
 char treas[20];
 
@@ -120,8 +120,7 @@ void setup()
   X_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA4);	//Sensibilidad de movimientos
   Y_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA5);
   Z_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA6);
-  TNT_sense = i2c_eeprom_read_byte(Eeprom_Address,0xC0); //Sensibilidad del acelerometro en el modo TNT
-
+  
 
 }
 
@@ -465,7 +464,26 @@ void TNT_setup(void)                            //Funcion de configuracion del m
 {
 	char SerialIn;
 	float sense;
-	sense = TNT_sense / 100;
+	int Add = 0xC0;								//Direccion de inicio de escriturura en Eeprom para este modo
+	
+	union Float_Byte
+	{
+		float datoF;
+		byte  datoB[4];
+	} unionFB;
+
+	TNT_sense[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC0); //Sensibilidad del acelerometro en el modo TNT
+  	TNT_sense[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC1);
+  	TNT_sense[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC2);
+  	TNT_sense[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC3);
+
+	for(int i=0;i<4;i++)
+	{
+		unionFB.datoB[i] = TNT_sense[i];
+	}
+	sense = unionFB.datoF;
+
+
   	Serial1.println("---------------------------------");
  	Serial1.println("-- Configuracion del modo TNT  --");
   	Serial1.println("---------------------------------");
@@ -511,14 +529,25 @@ void TNT_setup(void)                            //Funcion de configuracion del m
 	  				sense = 0.50;
 	  				break;
 	  			}
-	  			TNT_sense = sense * 100;
-	  			i2c_eeprom_write_byte(Eeprom_Address,0xC0, TNT_sense);
-	  			delay(10);
+	  			unionFB.datoF = sense;
+
+	  			for(int i=0; i<4; i++)
+	  			{
+	  				i2c_eeprom_write_byte(Eeprom_Address,Add, unionFB.datoB[i]);
+	  				delay(10);
+	  				Add++;	
+	  			}
+
+
+	  			
 	  			Serial1.print("El nuevo valor es: ");
 	  			Serial1.print(sense);
-	  			Serial1.print(TNT_sense);
 	  			Serial1.println(" g");
-	  			Serial1.print(TNT_sense);
+	  			for(int i=0;i<4;i++)
+	  			{
+	  				Serial1.print(TNT_sense[i]);
+	  			}
+	  			
 	  			Menu = 0;
 	  			Mode = 2;
 	  			Serial1.println("Ya puedes empezar");
