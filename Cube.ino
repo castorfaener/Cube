@@ -507,6 +507,8 @@ void TNT_setup(void)                            //Funcion de configuracion del m
   			Serial1.println("2. 0,10 g");
   			Serial1.println("3. 0,25 g");
   			Serial1.println("4. 0,50 g");
+  			Serial1.println("5. 0,75 g");
+  			Serial1.println("6. 1,00 g");
 			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
 			while(Serial1.available())
 			{
@@ -528,6 +530,14 @@ void TNT_setup(void)                            //Funcion de configuracion del m
 	  				case '4':
 	  				sense = 0.50;
 	  				break;
+
+	  				case '5':
+	  				sense = 0.75;
+	  				break;
+
+	  				case '6':
+	  				sense = 1.00;
+	  				break;
 	  			}
 	  			unionFB.datoF = sense;
 
@@ -545,17 +555,16 @@ void TNT_setup(void)                            //Funcion de configuracion del m
 	  			Serial1.println(" g");
 	  			for(int i=0;i<4;i++)
 	  			{
-	  				Serial1.print(TNT_sense[i]);
+	  				Serial1.println(TNT_sense[i], DEC);
 	  			}
-	  			
-	  			Menu = 0;
-	  			Mode = 2;
-	  			Serial1.println("Ya puedes empezar");
-				i2c_eeprom_write_byte(Eeprom_Address, 0x08, Mode);
-	  			return;
     		}
     	}	
-    }	
+    }
+    Menu = 0;
+	Mode = 2;
+	Serial1.println("Ya puedes empezar");
+	i2c_eeprom_write_byte(Eeprom_Address, 0x08, Mode);
+	return;	
 }
 
 
