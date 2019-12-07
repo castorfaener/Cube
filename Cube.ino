@@ -29,6 +29,10 @@ byte X_sense;
 byte Y_sense;
 byte Z_sense;
 
+float X_accel;                      //Variables para la lectura del acelerometro
+float Y_accel;
+float Z_accel;
+
 byte TNT_sense[4];					//Sensibilidad del modo TNT
 
 char treas[20];
@@ -121,6 +125,10 @@ void setup()
   Y_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA5);
   Z_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA6);
   
+  TNT_sense[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC0); //Sensibilidad del acelerometro en el modo TNT
+  TNT_sense[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC1);
+  TNT_sense[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC2);
+  TNT_sense[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC3);
 
 }
 
@@ -619,9 +627,7 @@ void Show_config(void)                             //Funcion para mostrar la con
 
 void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 {
-  	float X_accel;                      //Variables para la lectura del acelerometro
-  	float Y_accel;
-  	float Z_accel;
+  	
 
   	int start = 0;
   
@@ -727,7 +733,21 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
 
 void TNT(void)                                  //Funcion de modo 2
 {
-  Serial1.println("TNT");
+ 	float sense;
+	int Add = 0xC0;								//Direccion de inicio de escriturura en Eeprom para este modo
+	
+	union Float_Byte
+	{
+		float datoF;
+		byte  datoB[4];
+	} unionFB;
+
+	for(int i=0;i<4;i++)
+	{
+		unionFB.datoB[i] = TNT_sense[i];
+	}
+	sense = unionFB.datoF;
+
 }
 
 void RFID(void)                                 //Funcion de modo 3
