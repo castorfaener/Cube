@@ -34,6 +34,7 @@ float Y_accel;
 float Z_accel;
 
 byte TNT_sense[4];					//Sensibilidad del modo TNT
+byte TNT_limit[4];					//Limite del modo TNT
 
 char treas[20];
 
@@ -472,20 +473,26 @@ void TNT_setup(void)                            //Funcion de configuracion del m
 {
 	char SerialIn;
 	float sense;
-	int Add = 0xC0;								//Direccion de inicio de escriturura en Eeprom para este modo
-	
+	float limit;
+	int Add_sense = 0xC0;								//Direccion de inicio de escriturura en Eeprom para este modo
+	int Add_limit = 0xC4;
+
 	union Float_Byte
 	{
 		float datoF;
 		byte  datoB[4];
 	} unionFB;
 
-	TNT_sense[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC0); //Sensibilidad del acelerometro en el modo TNT
+	TNT_sense[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC0); 	//Sensibilidad del acelerometro en el modo TNT
   	TNT_sense[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC1);
   	TNT_sense[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC2);
   	TNT_sense[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC3);
+  	TNT_limit[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC4);	//Limite del modo TNT
+  	TNT_limit[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC5);
+  	TNT_limit[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC6);
+  	TNT_limit[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC7);
 
-	for(int i=0;i<4;i++)
+	for(int i=0;i<4;i++)										//Convertimos los datos almacenados en la Eeprom en float
 	{
 		unionFB.datoB[i] = TNT_sense[i];
 	}
@@ -551,9 +558,9 @@ void TNT_setup(void)                            //Funcion de configuracion del m
 
 	  			for(int i=0; i<4; i++)
 	  			{
-	  				i2c_eeprom_write_byte(Eeprom_Address,Add, unionFB.datoB[i]);
+	  				i2c_eeprom_write_byte(Eeprom_Address,Add_sense, unionFB.datoB[i]);
 	  				delay(10);
-	  				Add++;	
+	  				Add_sense++;	
 	  			}
 
 
@@ -561,10 +568,87 @@ void TNT_setup(void)                            //Funcion de configuracion del m
 	  			Serial1.print("El nuevo valor es: ");
 	  			Serial1.print(sense);
 	  			Serial1.println(" g");
-	  			for(int i=0;i<4;i++)
+    		}
+    	}	
+    }
+
+	for(int i=0;i<4;i++)										//Convertimos los datos almacenados en la Eeprom en float
+	{
+		unionFB.datoB[i] = TNT_limit[i];
+	}
+	limit = unionFB.datoF;
+
+    Serial1.println(""); 
+  	Serial1.print("El limite del acelerometro para este modo es de: ");
+  	Serial1.print(limit);
+  	Serial1.println(" g's");
+  	Serial1.println("¿Quieres modificarlo? (s/n)");
+  	while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+	while(Serial1.available())
+	{
+    	SerialIn = Serial1.read();
+    	switch(SerialIn)
+		{
+  			case 'n':
+  			break;
+
+  			case 's':
+  			Serial1.println("Elige el nuevo valor:");
+  			Serial1.println("1. 0,25 g");
+  			Serial1.println("2. 0,50 g");
+  			Serial1.println("3. 0,75 g");
+  			Serial1.println("4. 1,00 g");
+  			Serial1.println("5. 1,25 g");
+  			Serial1.println("6. 1,50 g");
+			while(Serial1.available() <= 0);                                  //Esperamos hasta que recibamos un dato por Serial1
+			while(Serial1.available())
+			{
+	  			SerialIn = Serial1.read();
+	  			switch(SerialIn)
 	  			{
-	  				Serial1.println(TNT_sense[i], DEC);
+	  				case '1':
+	  				limit = 0.05;
+	  				break;
+
+	  				case '2':
+	  				limit = 0.10;
+	  				break;
+
+	  				case '3':
+	  				limit = 0.25;
+	  				break;
+
+	  				case '4':
+	  				limit = 0.50;
+	  				break;
+
+	  				case '5':
+	  				limit = 0.75;
+	  				break;
+
+	  				case '6':
+	  				limit = 1.00;
+	  				break;
 	  			}
+	  			unionFB.datoF = limit;
+
+	  			if(limit <= sense)
+	  			{
+	  				Serial1.println("--¡¡ATENCION!! El valor del límite es inferior o igual a la sensibilidad.\nEsto hará saltar la alarma sin previo aviso. ");
+	  			}
+
+	  			for(int i=0; i<4; i++)
+	  			{
+	  				i2c_eeprom_write_byte(Eeprom_Address,Add_limit, unionFB.datoB[i]);
+	  				delay(10);
+	  				Add_limit++;	
+	  			}
+
+
+	  			
+	  			Serial1.print("El nuevo valor es: ");
+	  			Serial1.print(limit);
+	  			Serial1.println(" g");
     		}
     	}	
     }
