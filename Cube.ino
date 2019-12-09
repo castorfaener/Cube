@@ -130,6 +130,10 @@ void setup()
   TNT_sense[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC1);
   TNT_sense[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC2);
   TNT_sense[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC3);
+  TNT_limit[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC4);	//Limite del modo TNT
+  TNT_limit[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC5);
+  TNT_limit[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC6);
+  TNT_limit[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC7);
 
 }
 
@@ -815,10 +819,12 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
 }
 
 
-void TNT(void)                                  //Funcion de modo 2
+void TNT(void)                                  //Funcion de modo 2   ---------------PENDIENTE DE PROBAR
 {
  	float sense;
-	int Add = 0xC0;								//Direccion de inicio de escriturura en Eeprom para este modo
+ 	float limit;
+
+ 	int start = 0;
 	
 	union Float_Byte
 	{
@@ -831,6 +837,55 @@ void TNT(void)                                  //Funcion de modo 2
 		unionFB.datoB[i] = TNT_sense[i];
 	}
 	sense = unionFB.datoF;
+
+	for(int i=0;i<4;i++)
+	{
+		unionFB.datoB[i] = TNT_limit[i];
+	}
+	limit = unionFB.datoF;
+
+	if(button1_state == HIGH)
+	{
+    	Serial1.println("empezamos");
+	    display.setTextColor(WHITE); 
+    	display.setTextSize(2);
+    	display.setCursor(40,8);
+    	display.print("START");
+    	display.display();
+    	display.clearDisplay();
+    	delay(2000);
+    	start = 1;
+    	do
+    	{
+	
+			if (IMU.accelerationAvailable()) 
+			{
+	  			IMU.readAcceleration(X_accel, Y_accel, Z_accel);
+	  			if(X_accel >= sense)
+	  			{
+	    			beep(50,2);
+				}
+				if(Y_accel >= sense)
+				{
+	    			beep(50,2);
+				}
+				if(Z_accel <= sense)
+				{
+	    			beep(50,2);
+				} 
+				
+  
+  				button2_state = digitalRead(Button2_Pin);
+  				delay(100);
+  				if(button2_state == HIGH)
+  				{
+					start = 0;
+					
+				}
+			}
+		}
+		while(start == 1);
+	}
 
 }
 
