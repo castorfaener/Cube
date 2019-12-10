@@ -154,6 +154,7 @@ void loop()
   			break;
 
   			case 2:  
+  			TNT();
   			break;
 		}
 	}
@@ -746,20 +747,23 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
 			if (IMU.accelerationAvailable()) 
 			{
 	  			IMU.readAcceleration(X_accel, Y_accel, Z_accel);
-	  			if(X_accel >= X_sense)
+	  			if(X_accel >= 1.5)
 	  			{
 	    			X_count++;
 	    			beep(50,1);
+	    			
 				}
-				if(Y_accel >= Y_sense)
+				if(Y_accel >= 1.5)
 				{
 	    			Y_count++;
 	    			beep(50,1);
+	    			
 				}
-				if(Z_accel <= Z_sense)
+				if(Z_accel >= 1.5)
 				{
 	    			Z_count++;
 	    			beep(50,1);
+	    			
 				} 
 				if(X_count >= 10)
 				{
@@ -782,6 +786,7 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
   				display.print(Z_count);
   				display.display();
   				display.clearDisplay();
+  				delay(100);
   
   				button2_state = digitalRead(Button2_Pin);
   				delay(100);
@@ -813,8 +818,8 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
     				}
 				}
 			}
-		}
-		while(start == 1);
+		}while(start == 1);
+		
 	}
 }
 
@@ -844,8 +849,14 @@ void TNT(void)                                  //Funcion de modo 2   ----------
 	}
 	limit = unionFB.datoF;
 
+	button1_state = digitalRead(Button1_Pin);
+  	delay(100);
+
 	if(button1_state == HIGH)
 	{
+		int limit_count = 0;
+    	led(Green);
+    	start = 1;
     	Serial1.println("empezamos");
 	    display.setTextColor(WHITE); 
     	display.setTextSize(2);
@@ -854,9 +865,8 @@ void TNT(void)                                  //Funcion de modo 2   ----------
     	display.display();
     	display.clearDisplay();
     	delay(2000);
-    	start = 1;
-    	int limit_count = 0;
-    	led(Green);
+    	
+    	
     	do
     	{
 	
@@ -877,7 +887,7 @@ void TNT(void)                                  //Funcion de modo 2   ----------
 	    			delay(200);
 	    			led(Green);
 				}
-				if(Z_accel <= sense)
+				if(Z_accel >= sense)
 				{
 	    			beep(50,2);
 	    			led(Yellow);
@@ -908,6 +918,7 @@ void TNT(void)                                  //Funcion de modo 2   ----------
 	    			led(Green);
 				}
 				
+				
 
 				
   
@@ -916,6 +927,7 @@ void TNT(void)                                  //Funcion de modo 2   ----------
   				if(button2_state == HIGH)
   				{
 					start = 0;
+					Serial1.println(limit_count);
 					
 				}
 			}
