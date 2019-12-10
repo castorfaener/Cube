@@ -855,6 +855,8 @@ void TNT(void)                                  //Funcion de modo 2   ----------
     	display.clearDisplay();
     	delay(2000);
     	start = 1;
+    	int limit_count = 0;
+    	led(Green);
     	do
     	{
 	
@@ -864,15 +866,49 @@ void TNT(void)                                  //Funcion de modo 2   ----------
 	  			if(X_accel >= sense)
 	  			{
 	    			beep(50,2);
+	    			led(Yellow);
+	    			delay(200);
+	    			led(Green);
 				}
 				if(Y_accel >= sense)
 				{
 	    			beep(50,2);
+	    			led(Yellow);
+	    			delay(200);
+	    			led(Green);
 				}
 				if(Z_accel <= sense)
 				{
 	    			beep(50,2);
+	    			led(Yellow);
+	    			delay(200);
+	    			led(Green);
 				} 
+				if(X_accel >= limit)
+	  			{
+	    			beep(500,1);
+	    			limit_count++;
+	    			led(Red);
+	    			delay(200);
+	    			led(Green);
+				}
+				if(Y_accel >= limit)
+	  			{
+	    			beep(500,1);
+	    			limit_count++;
+	    			led(Red);
+	    			delay(200);
+	    			led(Green);
+				}if(Z_accel >= limit)
+	  			{
+	    			beep(500,1);
+	    			limit_count++;
+	    			led(Red);
+	    			delay(200);
+	    			led(Green);
+				}
+				
+
 				
   
   				button2_state = digitalRead(Button2_Pin);
@@ -958,7 +994,7 @@ void Light_test(void)
 
 }
 
-void RFID_test(void)                          //NO FUNCIONA
+void RFID_test(void)                          
 {
 	Serial1.println("RFID_test");
 }
