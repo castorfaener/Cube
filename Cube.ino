@@ -86,54 +86,72 @@ void setup()
 {
 
 
-  Serial1.begin(9600);                //Inicializamos Serial 1   
+  	Serial1.begin(9600);                //Inicializamos Serial 1   
 
-  SPI.begin();                        //Inicializamos SPI   
-  mfrc522.PCD_Init();                 //Inicializamos el lector RFID
-  Wire.begin();                       //Inicializamos puerto I2C
+  	SPI.begin();                        //Inicializamos SPI   
+  	mfrc522.PCD_Init();                 //Inicializamos el lector RFID
+  	Wire.begin();                       //Inicializamos puerto I2C
 
-   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Inicializamos el display I2C 128x32
-   display.clearDisplay();
-
-
-
-   if (!IMU.begin()) 
+   	display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Inicializamos el display I2C 128x32
+   	
+   	if (!IMU.begin()) 
 	{
     	Serial1.println("Failed to initialize IMU!");
     	while (1);
 	}
 
-  pinMode(RLed_Pin, OUTPUT);            //Configuramos los pines de E/S
-  pinMode(GLed_Pin, OUTPUT);
-  pinMode(BLed_Pin, OUTPUT);
-  pinMode(Trig_Pin, OUTPUT);
-  pinMode(Echo_Pin, INPUT);
-  pinMode(Pres_Pin, INPUT);
-  pinMode(Light_Pin, INPUT);
-  pinMode(Key_Pin, INPUT);
-  pinMode(Button1_Pin, INPUT);
-  pinMode(Button2_Pin, INPUT);
-  pinMode(Buzz_Pin, OUTPUT);
+  	pinMode(RLed_Pin, OUTPUT);            //Configuramos los pines de E/S
+  	pinMode(GLed_Pin, OUTPUT);
+  	pinMode(BLed_Pin, OUTPUT);
+  	pinMode(Trig_Pin, OUTPUT);
+  	pinMode(Echo_Pin, INPUT);
+  	pinMode(Pres_Pin, INPUT);
+  	pinMode(Light_Pin, INPUT);
+  	pinMode(Key_Pin, INPUT);
+  	pinMode(Button1_Pin, INPUT);
+  	pinMode(Button2_Pin, INPUT);
+  	pinMode(Buzz_Pin, OUTPUT);
   
 
-  //Recuperamos la configuracion guardada de la Eeprom
+  	//Recuperamos la configuracion guardada de la Eeprom
 
-  Mode = i2c_eeprom_read_byte(Eeprom_Address,0x08);    //Leemos el modo de funcionamiento guardado en la EEPROM
-  X_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA0);   //Contraseña x y z
-  Y_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA1);
-  Z_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA2);
-  X_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA4);	//Sensibilidad de movimientos
-  Y_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA5);
-  Z_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA6);
+  	Mode = i2c_eeprom_read_byte(Eeprom_Address,0x08);    //Leemos el modo de funcionamiento guardado en la EEPROM
+  	X_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA0);   //Contraseña x y z
+  	Y_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA1);
+  	Z_pass = i2c_eeprom_read_byte(Eeprom_Address,0xA2);
+  	X_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA4);	//Sensibilidad de movimientos
+  	Y_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA5);
+  	Z_sense = i2c_eeprom_read_byte(Eeprom_Address,0xA6);
   
-  TNT_sense[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC0); //Sensibilidad del acelerometro en el modo TNT
-  TNT_sense[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC1);
-  TNT_sense[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC2);
-  TNT_sense[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC3);
-  TNT_limit[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC4);	//Limite del modo TNT
-  TNT_limit[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC5);
-  TNT_limit[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC6);
-  TNT_limit[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC7);
+  	TNT_sense[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC0); //Sensibilidad del acelerometro en el modo TNT
+  	TNT_sense[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC1);
+  	TNT_sense[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC2);
+  	TNT_sense[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC3);
+  	TNT_limit[0] = i2c_eeprom_read_byte(Eeprom_Address,0xC4);	//Limite del modo TNT
+  	TNT_limit[1] = i2c_eeprom_read_byte(Eeprom_Address,0xC5);
+  	TNT_limit[2] = i2c_eeprom_read_byte(Eeprom_Address,0xC6);
+  	TNT_limit[3] = i2c_eeprom_read_byte(Eeprom_Address,0xC7);
+
+  	display.clearDisplay();
+  	testdrawrect();
+  	delay(1000);
+  	display.clearDisplay();
+  	display.display();
+   	display.setTextColor(WHITE); 
+   	display.setTextSize(2);
+    display.setCursor(40,8);
+    display.print("CUBE");
+   	display.display();
+   	delay(1000);
+   	display.clearDisplay();
+   	display.setCursor(20,8);
+   	display.print("MODO: ");
+   	display.setCursor(100,8);
+   	display.print(Mode);
+   	display.display();
+   	delay(2000);
+   	display.clearDisplay();
+   	display.display();
 
 }
 
@@ -371,6 +389,7 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
     		break;
 		}
 	}
+	/*
 	Serial1.println(""); 
 	Serial1.println("La sensibilidad en g's es:");
   	Serial1.print("X: ");
@@ -421,6 +440,7 @@ void Moving_psw_setup(void)                     //Funcion de configuracion del m
     		break;
 		}
 	} 
+	*/
 	/*			NO FUNCIONA
 	Serial1.println(""); 
 	Serial1.print("La palabra buscada es: ");
@@ -1161,5 +1181,17 @@ void led(byte color)
 		digitalWrite(GLed_Pin, 0);
 		digitalWrite(BLed_Pin, 255);
 		break;        
+  	}
+}
+
+void testdrawrect(void) 																	//Dibujo de rectangulos en display
+{
+  	display.clearDisplay();
+
+  	for(int16_t i=0; i<display.height()/2; i+=2) 
+  	{
+    	display.drawRect(i, i, display.width()-2*i, display.height()-2*i, WHITE);
+    	display.display(); // Update screen with each newly-drawn rectangle
+    	delay(50);
   	}
 }
