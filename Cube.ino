@@ -14,6 +14,8 @@ const byte White = 4;
 const byte Yellow = 5;
 const byte Purple = 6;
 
+#define MAX_MODES 2
+
 
 const int Eeprom_Address = 0x50;
 byte Eeprom;
@@ -79,7 +81,7 @@ const int RST_PIN = 9;              // Pin 9 para el reset del RC522
 const int SS_PIN = 10;              // Pin 10 para el SS (SDA) del RC522
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Crear instancia del MFRC522
 
-Adafruit_SSD1306 display(128, 32, &Wire, -1);
+Adafruit_SSD1306 display(128, 32, &Wire, -1);			//Crear instancia del display i2c
 
 
 void setup() 
@@ -152,6 +154,8 @@ void setup()
    	delay(2000);
    	display.clearDisplay();
    	display.display();
+
+   	Mode = mode_change();
 
 }
 
@@ -1194,4 +1198,62 @@ void testdrawrect(void) 																	//Dibujo de rectangulos en display
     	display.display(); // Update screen with each newly-drawn rectangle
     	delay(50);
   	}
+}
+
+int mode_change(void)
+{
+	int m = MAX_MODES;
+	int state = 0;
+
+	button1_state = digitalRead(Button1_Pin);
+  	delay(2);
+  	button2_state = digitalRead(Button2_Pin);
+  	delay(2);
+
+  	if(button1_state == HIGH && button2_state == HIGH)
+  	{
+  		state = 1;
+  		display.clearDisplay();
+  		display.setTextColor(BLACK, WHITE);
+   		display.setCursor(20,8);
+   		display.print("MODO: ");
+   		display.setCursor(100,8);
+   		display.print(Mode);
+   		display.display();
+   		delay(2000);
+
+
+  	}
+  	while(state == 1)
+  	{
+  		button1_state = digitalRead(Button1_Pin);
+  		delay(2);
+  		button2_state = digitalRead(Button2_Pin);
+  		delay(2);
+
+  		if(button1_state == HIGH)
+  		{
+  			Mode++;
+  			if(Mode == MAX_MODES + 1)
+  			{
+  				Mode = 1;
+  			}
+  			display.clearDisplay();
+  			display.setTextColor(BLACK, WHITE);
+   			display.setCursor(20,8);
+   			display.print("MODO: ");
+   			display.setTextColor(WHITE);
+   			display.setCursor(100,8);
+   			display.print(Mode);
+   			display.display();
+   			delay(200);
+  		}
+  		if(button2_state == HIGH)
+  		{
+  			state = 0;
+  			display.clearDisplay();
+  			display.display();
+  		}
+  	}
+return(Mode);
 }
