@@ -722,23 +722,28 @@ void Check_sensor(void)                         //Funcion para comprobar el func
 
 void Show_config(void)                             //Funcion para mostrar la configuracion guardada en la EEPROM
 {
-  Serial1.println("----------------------------");
-  Serial1.println("-- Configuracion del cubo --");
-  Serial1.println("----------------------------");
-  Serial1.print("El identificador del cubo es: ");
-  Serial1.println(ID);
-  Serial1.print("El modo de funcionamiento es: ");
-  Serial1.println(Mode);
-  Serial1.println("La contraseña XYZ es: ");
-  Serial1.print("X: ");
-  Serial1.println(X_pass);
-  Serial1.print("Y: ");
-  Serial1.println(Y_pass);
-  Serial1.print("Z: ");
-  Serial1.println(Z_pass);
+	Serial1.println("-----------------------------------");	
+  	Serial1.println("-----------------------------------");
+  	Serial1.println("---- Configuracion del sistema ----");
+  	Serial1.println("-----------------------------------");
+  	Serial1.println("-----------------------------------\n");
+  	Serial1.print("El identificador del cubo es: ");
+  	Serial1.println(ID);
+  	Serial1.print("El modo de funcionamiento es: ");
+  	Serial1.println(Mode);
+  	Serial1.println("------------------------------");
+  	Serial1.println("-- Configuracion del modo 1 --");
+  	Serial1.println("------------------------------\n");
+  	Serial1.println("La contraseña XYZ es: ");
+  	Serial1.print("X: ");
+  	Serial1.println(X_pass);
+  	Serial1.print("Y: ");
+  	Serial1.println(Y_pass);
+  	Serial1.print("Z: ");
+  	Serial1.println(Z_pass);
 }
 
-void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+void Moving_psw(void)                           
 {
   	
 
