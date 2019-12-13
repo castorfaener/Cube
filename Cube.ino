@@ -763,7 +763,7 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
     	display.print("START");
     	display.display();
     	display.clearDisplay();
-    	delay(2000);
+    	delay(1000);
     	start = 1;
     	do
     	{
@@ -771,19 +771,19 @@ void Moving_psw(void)                           //PENDIENTE DE PROBAR XXXXXXXXXX
 			if (IMU.accelerationAvailable()) 
 			{
 	  			IMU.readAcceleration(X_accel, Y_accel, Z_accel);
-	  			if(X_accel >= 1.5)
+	  			if(X_accel >= 0.7)
 	  			{
 	    			X_count++;
 	    			beep(50,1);
 	    			
 				}
-				if(Y_accel >= 1.5)
+				if(Y_accel >= 0.3)
 				{
 	    			Y_count++;
 	    			beep(50,1);
 	    			
 				}
-				if(Z_accel >= 1.5)
+				if(Z_accel >= 0.3)
 				{
 	    			Z_count++;
 	    			beep(50,1);
@@ -1210,7 +1210,7 @@ int mode_change(void)
   	button2_state = digitalRead(Button2_Pin);
   	delay(2);
 
-  	if(button1_state == HIGH && button2_state == HIGH)
+  	if(button1_state == HIGH && button2_state == HIGH)			//Entramos en la funcion de seleccion de modo si presionamos los dos pulsadores
   	{
   		state = 1;
   		display.clearDisplay();
@@ -1234,7 +1234,7 @@ int mode_change(void)
   		if(button1_state == HIGH)
   		{
   			Mode++;
-  			if(Mode == MAX_MODES + 1)
+  			if(Mode == MAX_MODES + 1)									//Variamos la seleccion del modo con el pulsador 1
   			{
   				Mode = 1;
   			}
@@ -1251,8 +1251,9 @@ int mode_change(void)
   		if(button2_state == HIGH)
   		{
   			state = 0;
-  			display.clearDisplay();
+  			display.clearDisplay();										//Guardamos el modo de funcionamiento con el pulsador dos
   			display.display();
+  			i2c_eeprom_write_byte(Eeprom_Address, 0x08, Mode);
   		}
   	}
 return(Mode);
