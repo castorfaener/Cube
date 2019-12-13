@@ -47,7 +47,7 @@ byte EN_RFID;
 byte EN_Key;
 byte EN_RGB;
 byte EN_Display;
-byte EN_Buzz;
+byte EN_Buzz = 1;					//Habilitamos por defecto el sonido			
 
 int win = 0;
 
@@ -1137,6 +1137,11 @@ void i2c_eeprom_write_byte(int deviceaddress, unsigned int eeaddress, byte data)
 
 void beep(int time, int repeat)                               //Control de pitido
 {
+	if(EN_Buzz != 1)
+	{
+		return();											//Si el sonido esta deshabilitado salimos de la funcion
+	}
+
 	for(int i = 0; i < repeat; i++)  
 	{
     	digitalWrite(Buzz_Pin, HIGH);
