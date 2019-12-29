@@ -6,18 +6,18 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-const byte Off = 0;                   //Definimos colores del led RGB
-const byte Red = 1;
-const byte Green = 2;
-const byte Blue = 3;
-const byte White = 4;
-const byte Yellow = 5;
-const byte Purple = 6;
+#define Off 0                 //Definimos colores del led RGB
+#define Red 1
+#define Green 2
+#define Blue 3
+#define White 4
+#define Yellow 5
+#define Purple 6
 
 #define MAX_MODES 2
 
 
-const int Eeprom_Address = 0x50;
+#define Eeprom_Address 0x50
 byte Eeprom;
 
 int Menu = 0;                       //Control de nivel del menu
@@ -58,27 +58,27 @@ int cm;                           //distancia del sensor de US
 bool button1_state;                   //Control del estado de los botones
 bool button2_state; 
 
-const int RLed_Pin = 5;               //Definimos los pines del Led RGB
-const int GLed_Pin = 3;
-const int BLed_Pin = 2;
+#define RLed_Pin 5              //Definimos los pines del Led RGB
+#define GLed_Pin 3
+#define BLed_Pin 2
 
-const int Buzz_Pin = 6;               //Definimos el pin del zumbador
+#define Buzz_Pin 6               //Definimos el pin del zumbador
 
-const int Trig_Pin = A1;              //Definimos los pines del sensor de US
-const int Echo_Pin = A0;
+#define Trig_Pin A1              //Definimos los pines del sensor de US
+#define Echo_Pin A0
 
-const int Pres_Pin = A3;              //Definimos el pin del sensor de presencia
+#define Pres_Pin A3              //Definimos el pin del sensor de presencia
 
-const int Light_Pin = A2;             //Definimos el pin del sensor de luz
+#define Light_Pin A2             //Definimos el pin del sensor de luz
 
-const int Key_Pin = 8;               //Definimos el pin del interruptor de llave
+#define Key_Pin 8               //Definimos el pin del interruptor de llave
 
-const int Button1_Pin = 4;            //Definimos los pines de los tres pulsadores
-const int Button2_Pin = 7;
+#define Button1_Pin 4            //Definimos los pines de los tres pulsadores
+#define Button2_Pin 7
 
 
-const int RST_PIN = 9;              // Pin 9 para el reset del RC522
-const int SS_PIN = 10;              // Pin 10 para el SS (SDA) del RC522
+#define RST_PIN 9              // Pin 9 para el reset del RC522
+#define SS_PIN 10              // Pin 10 para el SS (SDA) del RC522
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Crear instancia del MFRC522
 
 Adafruit_SSD1306 display(128, 32, &Wire, -1);			//Crear instancia del display i2c
@@ -91,7 +91,7 @@ void setup()
   	Serial1.begin(9600);                //Inicializamos Serial 1   
 
   	SPI.begin();                        //Inicializamos SPI   
-  	mfrc522.PCD_Init();                 //Inicializamos el lector RFID
+  	
   	Wire.begin();                       //Inicializamos puerto I2C
 
    	display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Inicializamos el display I2C 128x32
@@ -892,8 +892,9 @@ void TNT(void)                                  //Funcion de modo 2   ----------
     	display.setCursor(40,8);
     	display.print("START");
     	display.display();
+    	delay(1000);
     	display.clearDisplay();
-    	delay(2000);
+    	display.display();
     	
     	
     	do
@@ -947,7 +948,7 @@ void TNT(void)                                  //Funcion de modo 2   ----------
 	    			led(Green);
 				}
 				
-				
+				delay(1000);
 
 				
   
@@ -1035,9 +1036,26 @@ void Light_test(void)
 
 }
 
-void RFID_test(void)                          
+void RFID_test(void)         										//PENDIENTE DE PROBAR                 
 {
-	Serial1.println("RFID_test");
+	mfrc522.PCD_Init();                 //Inicializamos el lector RFID
+	if ( mfrc522.PICC_IsNewCardPresent()) 
+        {  
+  		//Seleccionamos una tarjeta
+        if ( mfrc522.PICC_ReadCardSerial()) 
+        {
+                  // Enviamos serialemente su UID
+          	Serial1.print("Card UID:");
+            for (byte i = 0; i < mfrc522.uid.size; i++) 
+            {
+                Serial1.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+                Serial1.print(mfrc522.uid.uidByte[i], HEX);   
+            } 
+            Serial1.println();
+                  // Terminamos la lectura de la tarjeta  actual
+            mfrc522.PICC_HaltA();         
+        }      
+	}	
 }
 
 void Key_test(void)
@@ -1144,7 +1162,7 @@ void beep(int time, int repeat)                               //Control de pitid
 {
 	if(EN_Buzz != 1)
 	{
-		return();											//Si el sonido esta deshabilitado salimos de la funcion
+		return;											//Si el sonido esta deshabilitado salimos de la funcion
 	}
 
 	for(int i = 0; i < repeat; i++)  
